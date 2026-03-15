@@ -3,13 +3,18 @@ Utility functions for the bot.
 Message formatting and sending.
 """
 import logging
+import os
+from dotenv import load_dotenv
 from bs4 import BeautifulSoup
 from telegraph import Telegraph
 
+load_dotenv()
+
 logger = logging.getLogger(__name__)
 
-# Initialize Telegraph client (using anonymous account)
-telegraph = Telegraph()
+# Initialize Telegraph client with access token
+telegraph_token = os.getenv("TELEGRAPH_ACCESS_TOKEN")
+telegraph = Telegraph(access_token=telegraph_token)
 
 
 def sanitize_html_for_telegraph(html: str) -> str:
@@ -45,32 +50,6 @@ async def publish_to_telegraph(title: str, content: str) -> str:
     except Exception as e:
         logger.error(f"Failed to publish to Telegraph: {e}")
         return None
-
-
-async def send_long_message(query, message: str, parse_mode: str = None):
-    """Send a long message in chunks to avoid Telegram's 4096 character limit."""
-    MAX_LENGTH = 4096
-
-    if len(message) <= MAX_LENGTH:
-        await query.edit_message_text(message, parse_mode=parse_mode)
-        return
-
-    # Split message into chunks
-    chunks = []
-    for i in range(0, len(message), MAX_LENGTH):
-        chunk = message[i:i + MAX_LENGTH]
-        chunks.append(chunk)
-
-    # Send first chunk (edit the original message)
-    if parse_mode:
-        await query.edit_message_text(chunks[0], parse_mode=parse_mode)
-    else:
-        await query.edit_message_text(chunks[0])
-
-    # Send remaining chunks as new messages
-    for chunk in chunks[1:]:
-        await query.message.reply_text(chunk, parse_mode=parse_mode)
-
 
 def format_analysis_result_markdown(ticker: str, final_state: dict, signal: str) -> str:
     """Format analysis result as Markdown."""
