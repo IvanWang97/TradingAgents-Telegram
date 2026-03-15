@@ -2,6 +2,7 @@
 Utility functions for the bot.
 Message formatting and sending.
 """
+
 import logging
 import os
 from dotenv import load_dotenv
@@ -42,30 +43,25 @@ async def publish_to_telegraph(title: str, content: str) -> str:
     try:
         cleaned_html = sanitize_html_for_telegraph(content)
         page = telegraph.create_page(
-            title=title,
-            html_content=cleaned_html,
-            author_name="TradingAgents Bot"
+            title=title, html_content=cleaned_html, author_name="TradingAgents Bot"
         )
         return f"https://telegra.ph/{page['path']}"
     except Exception as e:
         logger.error(f"Failed to publish to Telegraph: {e}")
         return None
 
+
 def format_analysis_result_markdown(ticker: str, final_state: dict, signal: str) -> str:
     """Format analysis result as Markdown."""
     content = f"**{ticker} Analysis Result**\n\n**Decision:** {signal}\n\n"
-    for key, value in final_state.items():
-        title = key.replace('_', ' ').title()
-        content += f"\n**{title}**\n{value}\n"
+    decision = final_state.get("final_trade_decision", "N/A")
+    content += f"# Final Trade Decision\n\n{decision}\n\n"
     return content
 
 
 def format_short_message(ticker: str, signal: str, telegraph_url: str = None) -> str:
     """Format short message for Telegram with Telegraph link."""
-    message = (
-        f"*{ticker} Analysis Result*\n\n"
-        f"📊 **Decision**: `{signal}`\n\n"
-    )
+    message = f"*{ticker} Analysis Result*\n\n" f"📊 **Decision**: `{signal}`\n\n"
     if telegraph_url:
         message += f"📄 [View Full Report]({telegraph_url})"
     return message
