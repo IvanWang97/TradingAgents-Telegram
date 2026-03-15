@@ -52,25 +52,11 @@ async def send_long_message(query, message: str, parse_mode: str = None):
 
 def format_analysis_result_markdown(ticker: str, final_state: dict, signal: str) -> str:
     """Format analysis result as Markdown."""
-    decision = final_state.get("final_trade_decision", "N/A")
-    investment_plan = final_state.get("investment_plan", "N/A")
-    trader_plan = final_state.get("trader_investment_plan", "N/A")
-    market_report = final_state.get("market_report", "N/A")
-    sentiment_report = final_state.get("sentiment_report", "N/A")
-    news_report = final_state.get("news_report", "N/A")
-    fundamentals_report = final_state.get("fundamentals_report", "N/A")
-
-    return (
-        f"## {ticker} Analysis Result\n\n"
-        f"**Decision:** {signal}\n\n"
-        f"### Final Trade Decision\n\n{decision}\n\n"
-        f"### Investment Plan\n\n{investment_plan}\n\n"
-        f"### Trader Plan\n\n{trader_plan}\n\n"
-        f"### Market Report\n\n{market_report}\n\n"
-        f"### Sentiment Report\n\n{sentiment_report}\n\n"
-        f"### News Report\n\n{news_report}\n\n"
-        f"### Fundamentals Report\n\n{fundamentals_report}\n\n"
-    )
+    content = f"**{ticker} Analysis Result**\n\n**Decision:** {signal}\n\n"
+    for key, value in final_state.items():
+        title = key.replace('_', ' ').title()
+        content += f"\n**{title}**\n{value}\n"
+    return content
 
 
 def format_short_message(ticker: str, signal: str, telegraph_url: str = None) -> str:
