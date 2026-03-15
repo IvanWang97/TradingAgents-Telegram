@@ -3,6 +3,7 @@ Utility functions for the bot.
 Message formatting and sending.
 """
 import logging
+from bs4 import BeautifulSoup
 from telegraph import Telegraph
 
 logger = logging.getLogger(__name__)
@@ -11,12 +12,33 @@ logger = logging.getLogger(__name__)
 telegraph = Telegraph()
 
 
+def sanitize_html_for_telegraph(html: str) -> str:
+    """Convert HTML to Telegraph-compatible format."""
+    soup = BeautifulSoup(html, "html.parser")
+
+    # Map unsupported HTML tags to Telegraph-supported ones
+    tag_map = {
+        "h1": "h3",
+        "h2": "h3",
+        "h3": "h4",
+        "h4": "h4",
+        "h5": "h4",
+        "h6": "h4",
+    }
+
+    for element in soup.find_all(list(tag_map.keys())):
+        element.name = tag_map[element.name]
+
+    return str(soup)
+
+
 async def publish_to_telegraph(title: str, content: str) -> str:
     """Publish content to Telegraph and return URL."""
     try:
+        cleaned_html = sanitize_html_for_telegraph(content)
         page = telegraph.create_page(
             title=title,
-            html_content=content,
+            html_content=cleaned_html,
             author_name="TradingAgents Bot"
         )
         return f"https://telegra.ph/{page['path']}"
