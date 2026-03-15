@@ -69,14 +69,16 @@ async def button_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
             # Format as Markdown
             markdown_content = format_analysis_result_markdown(ticker, final_state, signal)
+            print(markdown_content)  # Debug print
             # Convert Markdown to HTML
             html_content = markdown.markdown(markdown_content)
+            print(html_content)  # Debug print
             # Publish to Telegraph
             telegraph_url = await publish_to_telegraph(f"{ticker} Analysis", html_content)
 
             # Send short message with Telegraph link
             message = format_short_message(ticker, signal, telegraph_url)
-            await query.edit_message_text(message, parse_mode="Markdown", disable_web_page_preview=True)
+            await query.edit_message_text(message, parse_mode="MarkdownV2")
 
         except Exception as e:
             logger.error(f"Error analyzing {ticker}: {e}")
